@@ -53,9 +53,3 @@ jobs:
           name: built-apks
           path: output-apks/
           retention-days: 7
-``` ````
-
-Notes and next steps:
-- The workflow builds the debug APK by default (safe because it doesn't require signing). If you need a release-signed APK, replace `assembleDebug` with `assembleRelease` and configure signing keys (recommended via GitHub Secrets and a secure signing step).
-- After the run completes, download the artifact from the Actions run page: click the run → "Artifacts" → `built-apks`.
-- If your project uses product flavors or a different Gradle task, change the Gradle command accordingly (for example, `./gradlew assembleMyFlavorRelease`).
