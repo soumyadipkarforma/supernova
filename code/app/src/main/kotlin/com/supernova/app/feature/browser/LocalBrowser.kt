@@ -13,12 +13,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.launch
 
 @Composable
 fun LocalBrowserScreen() {
     var url by remember { mutableStateOf("http://127.0.0.1:8080") }
     var activePorts by remember { mutableStateOf<List<Int>>(emptyList()) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         activePorts = PortScanner.scanLocalPorts()
@@ -40,11 +42,9 @@ fun LocalBrowserScreen() {
             )
             IconButton(onClick = { 
                 webViewRef?.reload()
-                // Re-scan ports
-                androidx.compose.runtime.rememberCoroutineScope().run {
-                    kotlinx.coroutines.MainScope().run {
-                        activePorts = PortScanner.scanLocalPorts()
-                    }
+                // Re-scan ports using the composable coroutine scope
+                coroutineScope.launch {
+                    activePorts = PortScanner.scanLocalPorts()
                 }
             }) {
                 Icon(Icons.Default.Refresh, "Reload")
@@ -77,6 +77,8 @@ fun LocalBrowserScreen() {
                 if (view.url != url) {
                     view.loadUrl(url)
                 }
+                // keep reference updated in case the view instance changes
+                webViewRef = view
             },
             modifier = Modifier.weight(1f).fillMaxWidth()
         )
