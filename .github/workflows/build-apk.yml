@@ -1,67 +1,38 @@
-# Build an Android APK treating the 'code' folder as the project root.
-# - If code/gradlew exists, use it
-# - Otherwise install system Gradle and generate/use a wrapper, then build
-# Uploads produced APK(s) as artifact (no pushing to repo)
-name: Build APK (code as root)
+name: Build Supernova APK (CI)
 
 on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+
+    defaults:
+      run:
+        working-directory: code
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up JDK 17
+      - name: Set up Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Show code/ contents
-        run: |
-          echo "Listing code/ directory"
-          ls -la code || true
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x gradlew
 
-      - name: Build (use wrapper in code/ if present, else install gradle & generate wrapper)
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx1g"
-        run: |
-          set -e
-          # Move into the code directory for all operations
-          cd code || (echo "code/ directory not found" && exit 1)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
 
-          if [ -f ./gradlew ]; then
-            echo "Using existing gradlew in code/"
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --no-daemon
-          else
-            echo "No gradlew found in code/. Installing system gradle and generating wrapper..."
-            sudo apt-get update
-            sudo apt-get install -y gradle
-            # Create wrapper using installed gradle (choose a version if you want)
-            gradle wrapper --gradle-version 8.4
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --no-daemon
-          fi
-
-      - name: Collect APK(s)
-        run: |
-          mkdir -p output-apks
-          # find apk(s) under code/ and copy preserving path
-          find code -type f -name "*.apk" -exec cp --parents {} output-apks/ \; || true
-          echo "Collected APKs:"
-          ls -R output-apks || true
-
-      - name: Upload APKs as artifact
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: built-apks
-          path: output-apks/
-          retention-days: 7
+          name: supernova-debug-apk
+          path: code/app/build/outputs/apk/debug/*.apk
