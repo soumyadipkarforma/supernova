@@ -1,4 +1,4 @@
-name: Build Supernova APK (CI)
+name: Build Supernova APK
 
 on:
   push:
@@ -11,10 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: code
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,13 +21,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Grant execute permission to Gradle wrapper
-        run: chmod +x gradlew
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x code/gradlew
 
       - name: Build Debug APK
+        working-directory: code
         run: ./gradlew assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload Debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: supernova-debug-apk
