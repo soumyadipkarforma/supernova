@@ -3,16 +3,20 @@ package com.supernova.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,12 +37,17 @@ class MainActivity : ComponentActivity() {
             SupernovaTheme {
                 var isInstalled by remember { mutableStateOf(isTermuxInstalled(this)) }
                 
-                if (!isInstalled) {
-                    TermuxCheckerScreen(onRetry = {
-                        isInstalled = isTermuxInstalled(this)
-                    })
-                } else {
-                    MainNavigation()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    if (!isInstalled) {
+                        TermuxCheckerScreen(onRetry = {
+                            isInstalled = isTermuxInstalled(this)
+                        })
+                    } else {
+                        MainNavigation()
+                    }
                 }
             }
         }
@@ -57,32 +66,48 @@ fun MainNavigation() {
     
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = currentDestination == "files",
-                    onClick = { navController.navigate("files") },
-                    icon = { Icon(Icons.Default.Folder, contentDescription = "Files") },
-                    label = { Text("Files") }
+            NavigationBar(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .clip(RoundedCornerShape(24.dp)),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+                tonalElevation = 8.dp
+            ) {
+                val items = listOf(
+                    Triple("files", Icons.Default.Folder, "Files"),
+                    Triple("editor", Icons.Default.Code, "Editor"),
+                    Triple("browser", Icons.Default.Language, "Browser")
                 )
-                NavigationBarItem(
-                    selected = currentDestination == "editor",
-                    onClick = { navController.navigate("editor") },
-                    icon = { Icon(Icons.Default.Code, contentDescription = "Editor") },
-                    label = { Text("Editor") }
-                )
-                NavigationBarItem(
-                    selected = currentDestination == "browser",
-                    onClick = { navController.navigate("browser") },
-                    icon = { Icon(Icons.Default.Language, contentDescription = "Browser") },
-                    label = { Text("Browser") }
-                )
+                
+                items.forEach { (route, icon, label) ->
+                    NavigationBarItem(
+                        selected = currentDestination == route,
+                        onClick = { 
+                            if (currentDestination != route) {
+                                navController.navigate(route) {
+                                    popUpTo("files") { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        },
+                        icon = { Icon(icon, contentDescription = label) },
+                        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = "files",
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { fadeIn(animationSpec = tween(300)) + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
         ) {
             composable("files") {
                 FileManagerScreen(onFileSelected = { file ->
