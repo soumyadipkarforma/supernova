@@ -86,8 +86,8 @@ fun EditorScreen(file: File?) {
                                 "js" -> "node \"${file.name}\""
                                 "sh" -> "bash \"${file.name}\""
                                 "kt" -> "kotlinc \"${file.name}\" -include-runtime -d \"${file.nameWithoutExtension}.jar\" && java -jar \"${file.nameWithoutExtension}.jar\""
-                                else -> "echo 'Executing ${file.name}...'
-                            "
+                                else -> "echo 'Executing ${file.name}...'"
+                            }
                             TermuxBridge.runCommand(context, cmd, file.parent ?: "")
                         },
                         colors = IconButtonDefaults.filledIconButtonColors(
