@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import com.supernova.app.feature.checkinstall.TermuxCheckerScreen
 import com.supernova.app.feature.checkinstall.isTermuxInstalled
 import com.supernova.app.feature.editor.EditorScreen
 import com.supernova.app.feature.filemanager.FileManagerScreen
+import com.supernova.app.feature.terminal.TerminalScreen
 import com.supernova.app.ui.theme.SupernovaTheme
 import java.io.File
 
@@ -76,6 +78,7 @@ fun MainNavigation() {
                 val items = listOf(
                     Triple("files", Icons.Default.Folder, "Files"),
                     Triple("editor", Icons.Default.Code, "Editor"),
+                    Triple("terminal", Icons.Default.Terminal, "Terminal"),
                     Triple("browser", Icons.Default.Language, "Browser")
                 )
                 
@@ -117,6 +120,12 @@ fun MainNavigation() {
             }
             composable("editor") {
                 EditorScreen(file = activeFile)
+            }
+            composable("terminal") {
+                // Use app's external files dir as default workspace
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val workspace = File(context.getExternalFilesDir(null), "workspace").apply { mkdirs() }
+                TerminalScreen(workingDir = workspace)
             }
             composable("browser") {
                 LocalBrowserScreen()
