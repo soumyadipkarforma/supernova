@@ -41,7 +41,7 @@ import com.supernova.app.feature.terminal.TerminalScreen
 import com.supernova.app.ui.theme.SupernovaTheme
 import java.io.File
 
-import com.supernova.app.feature.splash.SplashScreen
+import com.supernova.app.feature.splash.AppSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,23 +50,33 @@ class MainActivity : ComponentActivity() {
         setContent {
             SupernovaTheme {
                 var showSplash by remember { mutableStateOf(true) }
-                var isInstalled by remember { mutableStateOf(isTermuxInstalled(this)) }
-                var hasStoragePermission by remember { mutableStateOf(checkStoragePermission()) }
+                var isInstalled by remember { mutableStateOf(true) } // Default to true to avoid flicker
+                var hasStoragePermission by remember { mutableStateOf(true) } // Default to true to avoid flicker
                 
+                LaunchedEffect(Unit) {
+                    try {
+                        isInstalled = isTermuxInstalled(this@MainActivity)
+                        hasStoragePermission = checkStoragePermission()
+                    } catch (e: Exception) {
+                        // If checks fail, we might want to default to something or log it
+                        isInstalled = false 
+                    }
+                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     if (showSplash) {
-                        SplashScreen(onFinished = { showSplash = false })
+                        AppSplashScreen(onFinished = { showSplash = false })
                     } else if (!hasStoragePermission) {
                         StoragePermissionScreen(
-                            onPermissionGranted = { hasStoragePermission = true },
+                            onPermissionGranted = { hasStoragePermission = checkStoragePermission() },
                             onRequestPermission = { requestStoragePermission() }
                         )
                     } else if (!isInstalled) {
                         TermuxCheckerScreen(onRetry = {
-                            isInstalled = isTermuxInstalled(this)
+                            isInstalled = isTermuxInstalled(this@MainActivity)
                         })
                     } else {
                         MainNavigation()

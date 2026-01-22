@@ -16,7 +16,8 @@
     android:label="Supernova"
     android:icon="@drawable/ic_supernova_logo"
     android:roundIcon="@drawable/ic_supernova_logo"
-    android:theme="@style/Theme.Supernova">
+    android:theme="@style/Theme.Supernova"
+    android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

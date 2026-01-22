@@ -22,11 +22,11 @@ import com.supernova.app.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onFinished: () -> Unit) {
+fun AppSplashScreen(onFinished: () -> Unit) {
     var startAnimation by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0.5f,
-        animationSpec = tween(durationMillis = 1000, easing = OvershootInterpolator().toEasing()),
+        animationSpec = tween(durationMillis = 1000),
         label = "scale"
     )
     val alpha by animateFloatAsState(

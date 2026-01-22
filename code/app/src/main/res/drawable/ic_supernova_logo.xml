@@ -1,25 +1,12 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    width="240dp"
-    height="240dp"
-    viewportWidth="100"
-    viewportHeight="100">
-    <!-- Starburst Background (The Supernova) -->
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
     <path
         android:fillColor="#FF7F52FF"
-        android:pathData="M50,10 L55,40 L85,35 L65,55 L90,80 L55,70 L50,95 L45,70 L10,80 L35,55 L15,35 L45,40 Z" />
-    
-    <!-- Outer Glow Circle -->
-    <path
-        android:fillColor="#33FFFFFF"
-        android:pathData="M50,50m-35,0a35,35 0,1 1,70 0a35,35 0,1 1,-70 0" />
-
-    <!-- Inner Core Circle -->
-    <path
-        android:fillColor="#FF2196F3"
-        android:pathData="M50,50m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
-
-    <!-- Code Brackets in the center -->
+        android:pathData="M50,10 L90,90 L10,90 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M38,42 L32,50 L38,58 M62,42 L68,50 L62,58 M48,40 L52,60" />
+        android:pathData="M40,50 L50,40 L60,50 L50,60 Z" />
 </vector>

@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.Supernova" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Supernova" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">#121212</item>
     </style>
 </resources>
