@@ -5,6 +5,7 @@ plugins {
 android {
     namespace = "com.termux.emulator"
     compileSdk = 34
+    ndkVersion = "26.1.10909125"
 
     defaultConfig {
         minSdk = 26

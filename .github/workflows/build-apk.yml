@@ -24,6 +24,9 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses || true
+
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
         working-directory: code
