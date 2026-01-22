@@ -39,12 +39,15 @@ import com.supernova.app.feature.terminal.TerminalScreen
 import com.supernova.app.ui.theme.SupernovaTheme
 import java.io.File
 
+import com.supernova.app.feature.splash.SplashScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         setContent {
             SupernovaTheme {
+                var showSplash by remember { mutableStateOf(true) }
                 var isInstalled by remember { mutableStateOf(isTermuxInstalled(this)) }
                 var hasStoragePermission by remember { mutableStateOf(checkStoragePermission()) }
                 
@@ -52,7 +55,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (!hasStoragePermission) {
+                    if (showSplash) {
+                        SplashScreen(onFinished = { showSplash = false })
+                    } else if (!hasStoragePermission) {
                         StoragePermissionScreen(
                             onPermissionGranted = { hasStoragePermission = true },
                             onRequestPermission = { requestStoragePermission() }

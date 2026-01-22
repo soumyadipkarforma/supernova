@@ -14,6 +14,8 @@
 
     <application
     android:label="Supernova"
+    android:icon="@drawable/ic_supernova_logo"
+    android:roundIcon="@drawable/ic_supernova_logo"
     android:theme="@style/Theme.Supernova">
         <activity
             android:name=".MainActivity"
