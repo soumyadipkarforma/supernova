@@ -1,48 +1,43 @@
 package com.supernova.app.feature.terminal
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.supernova.app.feature.terminal.internal.ShellSession
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
 import java.io.File
 
 class TerminalViewModel : ViewModel() {
-    private var session: ShellSession? = null
-    
-    private val _terminalOutput = MutableStateFlow("")
-    val terminalOutput: StateFlow<String> = _terminalOutput
-    
-    // We keep a history of commands if needed, but for now just output
-    
-    fun initSession(workingDir: File) {
+    var session: TerminalSession? = null
+        private set
+
+    fun initSession(workingDir: File, client: TerminalSessionClient) {
         if (session != null) return
-        
-        session = ShellSession(workingDir, viewModelScope)
-        session?.start()
-        
-        viewModelScope.launch {
-            session?.output?.collect { newOutput ->
-                // Append new output (limit size if necessary)
-                val current = _terminalOutput.value
-                val next = if (current.length > 10000) {
-                     current.takeLast(9000) + newOutput
-                } else {
-                    current + newOutput
-                }
-                _terminalOutput.value = next
-            }
+
+        val shellPath = if (File("/data/data/com.termux/files/usr/bin/bash").exists()) {
+            "/data/data/com.termux/files/usr/bin/bash"
+        } else {
+            "/system/bin/sh"
         }
+        
+        val env = arrayOf(
+            "TERM=xterm-256color",
+            "PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:/system/bin:/system/xbin",
+            "HOME=${workingDir.absolutePath}",
+            "PREFIX=/data/data/com.termux/files/usr",
+            "TMPDIR=/data/data/com.termux/files/usr/tmp"
+        )
+        
+        session = TerminalSession(
+            shellPath,
+            workingDir.absolutePath,
+            arrayOf("-l"), // login shell
+            env,
+            10000, // transcript rows
+            client
+        )
     }
-    
-    fun sendCommand(cmd: String) {
-        session?.sendCommand(cmd)
-    }
-    
+
     override fun onCleared() {
         super.onCleared()
-        session?.close()
+        session?.finishIfRunning()
     }
 }

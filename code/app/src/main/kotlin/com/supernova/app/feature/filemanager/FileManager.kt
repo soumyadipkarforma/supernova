@@ -25,12 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
 
+import android.os.Environment
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileManagerScreen(onFileSelected: (File) -> Unit) {
     val context = LocalContext.current
     val workspaceRoot = remember { 
-        File(context.getExternalFilesDir(null), "workspace").apply { if (!exists()) mkdirs() }
+        File(Environment.getExternalStorageDirectory(), "workspace").apply { if (!exists()) mkdirs() }
     }
     
     var currentDir by remember { mutableStateOf(workspaceRoot) }

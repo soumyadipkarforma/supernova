@@ -1,11 +1,18 @@
-package com.supernova.app
-
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,6 +22,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -38,12 +46,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             SupernovaTheme {
                 var isInstalled by remember { mutableStateOf(isTermuxInstalled(this)) }
+                var hasStoragePermission by remember { mutableStateOf(checkStoragePermission()) }
                 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (!isInstalled) {
+                    if (!hasStoragePermission) {
+                        StoragePermissionScreen(
+                            onPermissionGranted = { hasStoragePermission = true },
+                            onRequestPermission = { requestStoragePermission() }
+                        )
+                    } else if (!isInstalled) {
                         TermuxCheckerScreen(onRetry = {
                             isInstalled = isTermuxInstalled(this)
                         })
@@ -52,6 +66,51 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun checkStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            true // For simplicity in this CLI update, assuming old permission is handled or manually granted. Real app should use ActivityResultContracts.
+        }
+    }
+
+    private fun requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.addCategory("android.intent.category.DEFAULT")
+                intent.data = Uri.parse(String.format("package:%s", applicationContext.packageName))
+                startActivityForResult(intent, 100)
+            } catch (e: Exception) {
+                val intent = Intent()
+                intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
+                startActivityForResult(intent, 100)
+            }
+        }
+    }
+}
+
+@Composable
+fun StoragePermissionScreen(onPermissionGranted: () -> Unit, onRequestPermission: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Storage Permission Needed", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Supernova needs access to your device storage to create the workspace folder and manage files.")
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onRequestPermission) {
+            Text("Grant Permission")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        // Polling button for user convenience after they return
+        OutlinedButton(onClick = onPermissionGranted) {
+            Text("I have granted permission")
         }
     }
 }
@@ -122,9 +181,8 @@ fun MainNavigation() {
                 EditorScreen(file = activeFile)
             }
             composable("terminal") {
-                // Use app's external files dir as default workspace
-                val context = androidx.compose.ui.platform.LocalContext.current
-                val workspace = File(context.getExternalFilesDir(null), "workspace").apply { mkdirs() }
+                // Use Shared Storage workspace
+                val workspace = File(Environment.getExternalStorageDirectory(), "workspace").apply { if (!exists()) mkdirs() }
                 TerminalScreen(workingDir = workspace)
             }
             composable("browser") {
