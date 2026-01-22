@@ -1,0 +1,37 @@
+/**
+ * Any CSS included here will be global.
+ */
+
+:root {
+  /* Supernova Violet: #7F52FF */
+  --ifm-color-primary: #7F52FF;
+  --ifm-color-primary-dark: #724ae6;
+  --ifm-color-primary-darker: #6c46d9;
+  --ifm-color-primary-darkest: #5939b3;
+  --ifm-color-primary-light: #8c63ff;
+  --ifm-color-primary-lighter: #936bff;
+  --ifm-color-primary-lightest: #a685ff;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #7F52FF;
+  --ifm-color-primary-dark: #724ae6;
+  --ifm-color-primary-darker: #6c46d9;
+  --ifm-color-primary-darkest: #5939b3;
+  --ifm-color-primary-light: #8c63ff;
+  --ifm-color-primary-lighter: #936bff;
+  --ifm-color-primary-lightest: #a685ff;
+  
+  /* Supernova Dark Theme Backgrounds */
+  --ifm-background-color: #0D0D2B;
+  --ifm-background-surface-color: #1A1A40;
+  
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.hero--primary {
+  --ifm-hero-background-color: #1A1A40;
+  background: linear-gradient(180deg, #0D0D2B 0%, #1A1A40 100%);
+}
