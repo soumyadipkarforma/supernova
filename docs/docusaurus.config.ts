@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Supernova',
   tagline: 'Mobile Development Reimagined',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo.svg',
 
   // Future flags
   future: {
@@ -51,7 +51,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/logo.svg',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
@@ -68,7 +68,7 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Docs',
+          label: 'Documentation',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
@@ -82,11 +82,15 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Resources',
           items: [
             {
-              label: 'Introduction',
+              label: 'Documentation',
               to: '/docs/intro',
+            },
+            {
+              label: 'Blog',
+              to: '/blog',
             },
           ],
         },
@@ -94,17 +98,12 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/soumyadipkarforma/supernova',
+              label: 'GitHub Issues',
+              href: 'https://github.com/soumyadipkarforma/supernova/issues',
             },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
             {
-              label: 'Blog',
-              to: '/blog',
+              label: 'Discussions',
+              href: 'https://github.com/soumyadipkarforma/supernova/discussions',
             },
           ],
         },
