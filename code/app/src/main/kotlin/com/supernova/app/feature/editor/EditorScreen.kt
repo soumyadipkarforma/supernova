@@ -1,161 +1,78 @@
 package com.supernova.app.feature.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.supernova.app.feature.terminal.TermuxBridge
+import com.supernova.app.IDEViewModel
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(file: File?) {
-    val context = LocalContext.current
-    var code by remember(file) { mutableStateOf(file?.readText() ?: "") }
-    val highlighter = remember { CodeHighlighter() }
-    val scrollState = rememberScrollState()
+fun EditorScreen(viewModel: IDEViewModel) {
+    val content by viewModel.activeFileContent.collectAsState()
+    val activeFile by viewModel.currentFile.collectAsState()
 
-    if (file == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    Icons.Default.Code,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "No file selected",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(
-                    "Select a file from the manager to start coding",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
+    if (activeFile == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Text("Select a file to edit", color = Color.Gray)
         }
         return
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            file.name,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            file.extension.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { file.writeText(code) }) {
-                        Icon(Icons.Outlined.Save, "Save")
-                    }
-                    FilledIconButton(
-                        onClick = {
-                            file.writeText(code)
-                            val cmd = when (file.extension) {
-                                "py" -> "python \"${file.name}\""
-                                "js" -> "node \"${file.name}\""
-                                "sh" -> "bash \"${file.name}\""
-                                "kt" -> "kotlinc \"${file.name}\" -include-runtime -d \"${file.nameWithoutExtension}.jar\" && java -jar \"${file.nameWithoutExtension}.jar\""
-                                else -> "echo 'Executing ${file.name}...'"
-                            }
-                            TermuxBridge.runCommand(context, cmd, file.parent ?: "")
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = Color(0xFF4CAF50),
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Icon(Icons.Default.PlayArrow, "Run")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                )
+    val annotatedString = buildAnnotatedString {
+        append(content)
+        val keywords = listOf("fun", "val", "var", "import", "package", "class", "interface", "object", "if", "else", "for", "while", "return", "true", "false", "null")
+        val regex = "\\b(${keywords.joinToString("|")})\\b".toRegex()
+        
+        regex.findAll(content).forEach { match ->
+            addStyle(
+                style = SpanStyle(color = Color(0xFFBD93F9), fontWeight = FontWeight.Bold),
+                start = match.range.first,
+                end = match.range.last + 1
             )
         }
-    ) { padding ->
-        val lines = code.split("\n").size
-        
-        Row(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            // Line numbers
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(40.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                    .padding(vertical = 16.dp),
-                horizontalAlignment = Alignment.End
-            ) {
-                repeat(lines) { index ->
-                    Text(
-                        text = (index + 1).toString(),
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                        ),
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                }
-            }
+    }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .horizontalScroll(rememberScrollState())
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFF1E1E2E))) {
+        Row(
+            modifier = Modifier.fillMaxWidth().background(Color(0xFF282A36)).padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Text(activeFile?.name ?: "", color = Color.White, fontSize = 14.sp)
+            Button(
+                onClick = { viewModel.saveFile() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF50FA7B), contentColor = Color.Black),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                modifier = Modifier.height(32.dp)
             ) {
-                BasicTextField(
-                    value = code,
-                    onValueChange = { code = it },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    textStyle = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 20.sp
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    visualTransformation = highlighter
-                )
+                Text("Save", fontSize = 12.sp)
             }
         }
+
+        BasicTextField(
+            value = TextFieldValue(annotatedString),
+            onValueChange = { viewModel.activeFileContent.value = it.text },
+            modifier = Modifier.fillMaxSize().padding(12.dp),
+            textStyle = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                color = Color(0xFFF8F8F2),
+                fontSize = 15.sp,
+                lineHeight = 22.sp
+            ),
+            cursorBrush = SolidColor(Color.White)
+        )
     }
 }
