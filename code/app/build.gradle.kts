@@ -10,9 +10,9 @@ android {
     defaultConfig {
         applicationId = "com.supernova.app"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 2
-        versionName = "1.1"
+        targetSdk = 28 // Lowered to 28 to bypass W^X restrictions for embedded binaries
+        versionCode = 3
+        versionName = "1.2-standalone"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,6 +64,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.google.accompanist:accompanist-webview:0.34.0")
     
+    // External terminal dependencies removed for standalone architecture
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

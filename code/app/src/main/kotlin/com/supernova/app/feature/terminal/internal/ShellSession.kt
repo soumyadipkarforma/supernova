@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter
 
 class ShellSession(
     private val workingDir: File,
+    private val binDir: File,
     private val scope: CoroutineScope
 ) {
     private var process: Process? = null
@@ -25,25 +26,41 @@ class ShellSession(
 
         scope.launch(Dispatchers.IO) {
             try {
-                process = ProcessBuilder("/system/bin/sh")
-                    .directory(workingDir)
-                    .redirectErrorStream(true)
-                    .start()
+                // Uses ProcessBuilder
+                // Executes: sh
+                val pb = ProcessBuilder("sh")
+                
+                // Sets working directory to: /storage/emulated/0/workspace (passed as workingDir)
+                pb.directory(workingDir)
+                pb.redirectErrorStream(true)
+                
+                // Sets PATH to include internal bin dir
+                val env = pb.environment()
+                val currentPath = env["PATH"] ?: ""
+                env["PATH"] = "${binDir.absolutePath}:${currentPath}"
+                
+                process = pb.start()
 
                 writer = OutputStreamWriter(process!!.outputStream)
                 val reader = BufferedReader(InputStreamReader(process!!.inputStream))
 
-                // Initial prompt or info
-                _output.emit("Supernova Internal Shell\n")
-                _output.emit("Working Directory: ${workingDir.absolutePath}\n")
+                // Initial banner
+                _output.emit("SuperNova Embedded Shell (BusyBox)\n")
+                _output.emit("Home: ${workingDir.absolutePath}\n")
                 _output.emit("$ ")
 
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
                     _output.emit(line + "\n")
                 }
+                
+                val exitCode = process?.waitFor()
+                _output.emit("\n[Process exited with code $exitCode]\n")
+
             } catch (e: Exception) {
                 _output.emit("Error starting shell: ${e.message}\n")
+                // Fallback debug info
+                _output.emit("Checked bin dir: ${binDir.absolutePath}\n")
             }
         }
     }
