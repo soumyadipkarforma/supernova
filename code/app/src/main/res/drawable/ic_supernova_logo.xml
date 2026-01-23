@@ -3,6 +3,11 @@
     android:height="240dp"
     android:viewportWidth="100"
     android:viewportHeight="100">
+    <!-- Background Layer -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M0,0h100v100h-100z" />
+    
     <!-- Starburst Background (The Supernova) -->
     <path
         android:fillColor="#FF7F52FF"
