@@ -43,9 +43,10 @@ class ShellSession(
             scope.launch {
                 val reader = BufferedReader(InputStreamReader(process!!.inputStream))
                 try {
-                    var line: String?
-                    while (reader.readLine().also { line = it }) != null) {
+                    var line: String? = reader.readLine()
+                    while (line != null) {
                         _outputFlow.emit(line + "\n")
+                        line = reader.readLine()
                     }
                 } catch (e: Exception) {
                     _outputFlow.emit("[Process Error]: ${e.message}\n")
