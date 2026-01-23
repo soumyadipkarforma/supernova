@@ -9,6 +9,7 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
 class ShellSession(
+    private val context: android.content.Context,
     private val workingDir: File,
     private val onProcessExit: (Int) -> Unit
 ) {
@@ -22,43 +23,34 @@ class ShellSession(
     fun start() {
         if (!workingDir.exists()) workingDir.mkdirs()
 
-        val pb = ProcessBuilder("/system/bin/sh")
+        // Determine internal paths
+        val usrDir = File(context.filesDir, "usr")
+        val binDir = File(usrDir, "bin")
+        val libDir = File(usrDir, "lib")
+        val shellPath = File(binDir, "sh").absolutePath
+        
+        // Fallback to system shell if bootstrap isn't ready (or for initial debug)
+        val executable = if (File(shellPath).exists()) shellPath else "/system/bin/sh"
+
+        val pb = ProcessBuilder(executable)
         pb.directory(workingDir)
         pb.redirectErrorStream(true)
 
-        val termuxPath = "/data/data/com.termux/files"
-        val termuxBin = "$termuxPath/usr/bin"
         val env = pb.environment()
         
-        // Inject Termux Binaries into PATH
-        env["PATH"] = "$termuxBin:${env["PATH"]}"
-        env["LD_LIBRARY_PATH"] = "$termuxPath/usr/lib"
+        // Inject Standalone Environment
+        env["PATH"] = "${binDir.absolutePath}:${env["PATH"]}"
+        env["LD_LIBRARY_PATH"] = libDir.absolutePath
         env["HOME"] = workingDir.absolutePath
         env["TERM"] = "xterm-256color"
+        env["PREFIX"] = usrDir.absolutePath
 
         try {
             process = pb.start()
-            inputWriter = OutputStreamWriter(process!!.outputStream)
-
-            scope.launch {
-                val reader = BufferedReader(InputStreamReader(process!!.inputStream))
-                try {
-                    var line: String? = reader.readLine()
-                    while (line != null) {
-                        _outputFlow.emit(line + "\n")
-                        line = reader.readLine()
-                    }
-                } catch (e: Exception) {
-                    _outputFlow.emit("[Process Error]: ${e.message}\n")
-                } finally {
-                    val exitCode = process?.waitFor() ?: -1
-                    onProcessExit(exitCode)
-                }
-            }
-            
-            // Auto-init bash if available in Termux
-            sendCommand("export PATH=$termuxBin:\$PATH")
-            sendCommand("if [ -f $termuxBin/bash ]; then exec $termuxBin/bash; fi")
+// ...
+            // Auto-init bash if available
+            sendCommand("export PATH=${binDir.absolutePath}:\$PATH")
+            sendCommand("if [ -f ${binDir.absolutePath}/bash ]; then exec ${binDir.absolutePath}/bash; fi")
 
         } catch (e: Exception) {
             scope.launch { _outputFlow.emit("[System Error]: Could not spawn process. ${e.message}\n") }

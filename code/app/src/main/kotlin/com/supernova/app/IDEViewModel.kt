@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 
-class IDEViewModel : ViewModel() {
+class IDEViewModel(application: android.app.Application) : androidx.lifecycle.AndroidViewModel(application) {
     private val _terminalOutput = MutableStateFlow<List<String>>(emptyList())
     val terminalOutput = _terminalOutput.asStateFlow()
     
@@ -29,7 +29,7 @@ class IDEViewModel : ViewModel() {
     }
 
     private fun startTerminal() {
-        currentSession = ProcessManager.createSession(activeSessionId)
+        currentSession = ProcessManager.createSession(getApplication(), activeSessionId)
         
         viewModelScope.launch {
             currentSession?.outputFlow?.collect { newLine ->

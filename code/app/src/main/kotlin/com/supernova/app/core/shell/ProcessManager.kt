@@ -6,9 +6,9 @@ object ProcessManager {
     private val sessions = mutableMapOf<String, ShellSession>()
     val workspaceRoot = File("/storage/emulated/0/workspace")
 
-    fun createSession(id: String, subDir: String = ""): ShellSession {
+    fun createSession(context: android.content.Context, id: String, subDir: String = ""): ShellSession {
         val workingDir = if (subDir.isEmpty()) workspaceRoot else File(workspaceRoot, subDir)
-        val session = ShellSession(workingDir) { exitCode ->
+        val session = ShellSession(context, workingDir) { exitCode ->
             sessions.remove(id)
         }
         sessions[id] = session

@@ -76,6 +76,17 @@ class ShellSession(
         }
     }
 
+    fun sendRaw(text: String) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                writer?.write(text)
+                writer?.flush()
+            } catch (e: Exception) {
+                _output.emit("Error sending raw input: ${e.message}\n")
+            }
+        }
+    }
+
     fun close() {
         try {
             process?.destroy()

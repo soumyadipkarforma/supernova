@@ -35,7 +35,7 @@ import com.supernova.app.feature.editor.EditorScreen
 import com.supernova.app.feature.filemanager.FileManagerScreen
 import com.supernova.app.feature.terminal.TerminalScreen
 import com.supernova.app.ui.theme.SupernovaTheme
-import com.supernova.app.feature.splash.AppSplashScreen
+import com.supernova.app.core.shell.BootstrapManager
 
 class MainActivity : ComponentActivity() {
     private val viewModel: IDEViewModel by viewModels()
@@ -51,7 +51,11 @@ class MainActivity : ComponentActivity() {
                 
                 LaunchedEffect(Unit) {
                     try {
-                        isInstalled = isTermuxInstalled(this@MainActivity)
+                        // Initialize embedded environment
+                        BootstrapManager.install(this@MainActivity)
+                        
+                        // Check external termux only as fallback if needed, but primarily we rely on bootstrap
+                        // For now, we assume if bootstrap installs, we are good.
                         hasStoragePermission = checkStoragePermission()
                     } catch (e: Exception) {
                         isInstalled = false 

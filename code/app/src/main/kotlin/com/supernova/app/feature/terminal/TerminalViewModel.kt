@@ -42,6 +42,10 @@ class TerminalViewModel(application: Application) : AndroidViewModel(application
     fun sendCommand(cmd: String) {
         session?.sendCommand(cmd)
     }
+
+    fun sendRaw(text: String) {
+        session?.sendRaw(text)
+    }
     
     override fun onCleared() {
         super.onCleared()

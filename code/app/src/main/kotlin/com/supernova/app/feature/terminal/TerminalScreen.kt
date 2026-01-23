@@ -63,6 +63,72 @@ fun TerminalScreen(workingDir: File) {
                 )
             }
         }
+
+        // Virtual Keys Toolbar
+        var isCtrl by remember { mutableStateOf(false) }
+        var isAlt by remember { mutableStateOf(false) }
+
+        // Helper for keys
+        val onKey: (String, String) -> Unit = { label, code ->
+            // Simple logic: if Alt is active, prefix with Esc
+            val finalCode = if (isAlt && label != "Alt") "\u001B$code" else code
+            // Note: Ctrl handling is complex for all keys, implemented basically for now
+            // For now, modifiers just toggle visual state or prefix
+            
+            if (label == "HomeDir") {
+                viewModel.sendCommand("cd ${workingDir.absolutePath}")
+            } else {
+                viewModel.sendRaw(finalCode)
+            }
+            
+            // Reset modifiers after non-modifier key
+            if (label != "Ctrl" && label != "Alt" && label != "Shift") {
+                isCtrl = false
+                isAlt = false
+            }
+        }
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color(0xFF252526),
+            tonalElevation = 2.dp
+        ) {
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp)
+            ) {
+                item {
+                    VirtualKey("Esc", onClick = { onKey("Esc", "\u001B") })
+                }
+                item {
+                    VirtualKey("Tab", onClick = { onKey("Tab", "\u0009") })
+                }
+                item {
+                    VirtualKey("Ctrl", isSelected = isCtrl, onClick = { isCtrl = !isCtrl })
+                }
+                item {
+                    VirtualKey("Alt", isSelected = isAlt, onClick = { isAlt = !isAlt })
+                }
+                item {
+                    VirtualKey("HomeDir", onClick = { onKey("HomeDir", "") })
+                }
+                item {
+                    VirtualKey("Shells: 1", onClick = { /* TODO: Show menu */ })
+                }
+                // Arrows
+                item { VirtualKey("▲", onClick = { onKey("Up", "\u001B[A") }) }
+                item { VirtualKey("▼", onClick = { onKey("Down", "\u001B[B") }) }
+                item { VirtualKey("◀", onClick = { onKey("Left", "\u001B[D") }) }
+                item { VirtualKey("▶", onClick = { onKey("Right", "\u001B[C") }) }
+                
+                // Special
+                item { VirtualKey("Home", onClick = { onKey("Home", "\u001B[H") }) }
+                item { VirtualKey("End", onClick = { onKey("End", "\u001B[F") }) }
+                item { VirtualKey("PgUp", onClick = { onKey("PgUp", "\u001B[5~") }) }
+                item { VirtualKey("PgDn", onClick = { onKey("PgDn", "\u001B[6~") }) }
+            }
+        }
         
         // Input Area
         Surface(
@@ -96,6 +162,32 @@ fun TerminalScreen(workingDir: File) {
                     modifier = Modifier.weight(1f).padding(start = 4.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun VirtualKey(
+    text: String,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.small,
+        color = if (isSelected) Color(0xFF007ACC) else Color(0xFF3C3C3C),
+        modifier = Modifier.height(32.dp)
+    ) {
+        Box(
+            contentAlignment = androidx.compose.ui.Alignment.Center,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace
+            )
         }
     }
 }
