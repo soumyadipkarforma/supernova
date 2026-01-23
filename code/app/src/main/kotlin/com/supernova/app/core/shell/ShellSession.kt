@@ -47,7 +47,24 @@ class ShellSession(
 
         try {
             process = pb.start()
-// ...
+            inputWriter = OutputStreamWriter(process!!.outputStream)
+
+            scope.launch {
+                val reader = BufferedReader(InputStreamReader(process!!.inputStream))
+                try {
+                    var line: String? = reader.readLine()
+                    while (line != null) {
+                        _outputFlow.emit(line + "\n")
+                        line = reader.readLine()
+                    }
+                } catch (e: Exception) {
+                    _outputFlow.emit("[Process Error]: ${e.message}\n")
+                } finally {
+                    val exitCode = process?.waitFor() ?: -1
+                    onProcessExit(exitCode)
+                }
+            }
+            
             // Auto-init bash if available
             sendCommand("export PATH=${binDir.absolutePath}:\$PATH")
             sendCommand("if [ -f ${binDir.absolutePath}/bash ]; then exec ${binDir.absolutePath}/bash; fi")
