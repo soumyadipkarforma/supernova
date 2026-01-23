@@ -35,3 +35,18 @@
   --ifm-hero-background-color: #1A1A40;
   background: linear-gradient(180deg, #0D0D2B 0%, #1A1A40 100%);
 }
+/* Keep homepage title & subtitle color consistent across light/dark themes */
+:root, [data-theme='dark'] {
+  --supernova-hero-title: #7F52FF;            /* Supernova Violet */
+  --supernova-hero-subtitle: rgba(127, 82, 255, 0.90);
+}
+
+/* Docusaurus hero uses .hero__title and .hero__subtitle */
+.hero__title {
+  color: var(--supernova-hero-title) !important;
+  -webkit-text-fill-color: var(--supernova-hero-title) !important; /* better override on some browsers */
+}
+
+.hero__subtitle {
+  color: var(--supernova-hero-subtitle) !important;
+}
