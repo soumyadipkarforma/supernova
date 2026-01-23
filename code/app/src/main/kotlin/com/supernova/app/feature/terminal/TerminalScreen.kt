@@ -67,6 +67,7 @@ fun TerminalScreen(workingDir: File) {
         // Virtual Keys Toolbar
         var isCtrl by remember { mutableStateOf(false) }
         var isAlt by remember { mutableStateOf(false) }
+        var isShift by remember { mutableStateOf(false) }
 
         // Helper for keys
         val onKey: (String, String) -> Unit = { label, code ->
@@ -85,6 +86,7 @@ fun TerminalScreen(workingDir: File) {
             if (label != "Ctrl" && label != "Alt" && label != "Shift") {
                 isCtrl = false
                 isAlt = false
+                isShift = false
             }
         }
 
@@ -109,6 +111,9 @@ fun TerminalScreen(workingDir: File) {
                 }
                 item {
                     VirtualKey("Alt", isSelected = isAlt, onClick = { isAlt = !isAlt })
+                }
+                item {
+                    VirtualKey("Shift", isSelected = isShift, onClick = { isShift = !isShift })
                 }
                 item {
                     VirtualKey("HomeDir", onClick = { onKey("HomeDir", "") })
