@@ -28,6 +28,39 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Setup Android NDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Install NDK
+        run: sdkmanager "ndk;26.1.10909125"
+
+      - name: Build BusyBox
+        run: |
+          git clone --depth 1 https://github.com/mirror/busybox.git
+          cd busybox
+          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125
+          export TOOLCHAIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64
+          export TARGET=aarch64-linux-android
+          export API=26
+          export CC=$TOOLCHAIN/bin/${TARGET}${API}-clang
+          export AR=$TOOLCHAIN/bin/llvm-ar
+          export LD=$TOOLCHAIN/bin/ld.lld
+          export STRIP=$TOOLCHAIN/bin/llvm-strip
+          
+          make distclean
+          make defconfig
+          sed -i 's/# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
+          sed -i 's/# CONFIG_ASH is not set/CONFIG_ASH=y/' .config
+          
+          # Force cross-compilation variables
+          make -j$(nproc) CC="$CC" AR="$AR" LD="$LD"
+          
+          $STRIP busybox
+          mkdir -p ../code/app/src/main/assets/bin
+          cp busybox ../code/app/src/main/assets/bin/
+          cd ..
+          rm -rf busybox
+
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
 
