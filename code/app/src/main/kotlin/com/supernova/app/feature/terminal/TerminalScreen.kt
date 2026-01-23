@@ -4,49 +4,41 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.termux.view.TerminalView
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import java.io.File
 
 @Composable
-fun TerminalScreen(workingDir: File = File("/data/data/com.termux/files/home")) {
-    val viewModel: TerminalViewModel = viewModel()
-    val context = LocalContext.current
-    
-    val terminalView = remember { TerminalView(context, null) }
-    
-    val client = remember {
-        object : DefaultTerminalViewClient() {
-            override fun onTextChanged(changedSession: com.termux.terminal.TerminalSession) {
-                terminalView.postInvalidate()
-            }
-        }
-    }
-
-    LaunchedEffect(terminalView) {
-        terminalView.setTerminalViewClient(client)
-        terminalView.setTextSize(40)
-    }
-
-    LaunchedEffect(workingDir) {
-        viewModel.initSession(workingDir, client)
-        terminalView.attachSession(viewModel.session)
-    }
-
-    Column(
+fun TerminalScreen(workingDir: File) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
     ) {
-        AndroidView(
-            factory = { terminalView },
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Terminal Feature Unavailable",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "The internal terminal implementation has been removed.",
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodyMedium,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Working Directory: ${workingDir.name}",
+                color = Color.DarkGray,
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace
+            )
+        }
     }
 }

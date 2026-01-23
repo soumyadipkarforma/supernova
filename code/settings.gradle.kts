@@ -14,5 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Supernova"
 include(":app")
-include(":terminal-emulator")
-include(":terminal-view")
