@@ -48,25 +48,19 @@ jobs:
           export STRIP=$TOOLCHAIN/bin/llvm-strip
           
           make distclean
-          # Start with a minimal config to avoid bloat and build errors
-          make allnoconfig
+          # Use default config to include coreutils and standard tools
+          make defconfig
           
           # Enable static linking
           sed -i 's/# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
           
           # Enable Shells
           sed -i 's/# CONFIG_ASH is not set/CONFIG_ASH=y/' .config
-          sed -i 's/# CONFIG_SH_IS_ASH is not set/CONFIG_SH_IS_ASH=y/' .config
           
-          # Enable Core Commands (carefully selected)
-          sed -i 's/# CONFIG_LS is not set/CONFIG_LS=y/' .config
-          sed -i 's/# CONFIG_CAT is not set/CONFIG_CAT=y/' .config
-          sed -i 's/# CONFIG_ECHO is not set/CONFIG_ECHO=y/' .config
-          sed -i 's/# CONFIG_CP is not set/CONFIG_CP=y/' .config
-          sed -i 's/# CONFIG_MV is not set/CONFIG_MV=y/' .config
-          sed -i 's/# CONFIG_RM is not set/CONFIG_RM=y/' .config
-          sed -i 's/# CONFIG_MKDIR is not set/CONFIG_MKDIR=y/' .config
-          sed -i 's/# CONFIG_CHMOD is not set/CONFIG_CHMOD=y/' .config
+          # Disable features known to break Android NDK builds (missing headers)
+          sed -i 's/CONFIG_FEATURE_UTMP=y/# CONFIG_FEATURE_UTMP is not set/' .config
+          sed -i 's/CONFIG_FEATURE_WTMP=y/# CONFIG_FEATURE_WTMP is not set/' .config
+          sed -i 's/CONFIG_FEATURE_INETD_RPC=y/# CONFIG_FEATURE_INETD_RPC is not set/' .config
           
           # Force cross-compilation variables
           make -j$(nproc) CC="$CC" AR="$AR" LD="$LD"
