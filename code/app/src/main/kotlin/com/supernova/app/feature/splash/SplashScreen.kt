@@ -89,6 +89,18 @@ fun AppSplashScreen(onFinished: () -> Unit) {
                     .padding(top = 8.dp)
                     .alpha(alpha)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "built by Soumyadip Karforma",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = Color.White.copy(alpha = 0.5f),
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = 1.sp
+                ),
+                modifier = Modifier.alpha(alpha)
+            )
         }
         
         Text(
