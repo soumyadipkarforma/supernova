@@ -59,13 +59,18 @@ jobs:
           # Enable Shells
           sed -i 's/# CONFIG_ASH is not set/CONFIG_ASH=y/' .config
           
-          # Disable features known to break Android NDK builds (missing headers)
+          # Disable features known to break Android NDK builds (missing headers or bionic incompatibilities)
           sed -i 's/CONFIG_FEATURE_UTMP=y/# CONFIG_FEATURE_UTMP is not set/' .config
           sed -i 's/CONFIG_FEATURE_WTMP=y/# CONFIG_FEATURE_WTMP is not set/' .config
           sed -i 's/CONFIG_FEATURE_INETD_RPC=y/# CONFIG_FEATURE_INETD_RPC is not set/' .config
+          sed -i 's/CONFIG_FEATURE_TOUCH_NODEREF=y/# CONFIG_FEATURE_TOUCH_NODEREF is not set/' .config
+          sed -i 's/CONFIG_NSLOOKUP=y/# CONFIG_NSLOOKUP is not set/' .config
+          sed -i 's/CONFIG_SELINUX=y/# CONFIG_SELINUX is not set/' .config
+          sed -i 's/CONFIG_PAM=y/# CONFIG_PAM is not set/' .config
+          sed -i 's/CONFIG_IFPLUGD=y/# CONFIG_IFPLUGD is not set/' .config
           
-          # Force cross-compilation variables
-          make -j$(nproc) CC="$CC" AR="$AR" LD="$LD"
+          # Force cross-compilation variables and skip warnings-as-errors
+          make -j$(nproc) CC="$CC" AR="$AR" LD="$LD" EXTRA_CFLAGS="-Wno-error -D_GNU_SOURCE"
           
           $STRIP busybox
           mkdir -p ../code/app/src/main/assets/bin
