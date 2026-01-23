@@ -44,14 +44,7 @@ fun AppSplashScreen(onFinished: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF0D0D2B), // Deep space blue
-                        Color(0xFF1A1A40)
-                    )
-                )
-            ),
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Column(
