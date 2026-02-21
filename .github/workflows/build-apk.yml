@@ -5,10 +5,12 @@ on:
     branches: [ "main" ]
     paths:
       - 'code/**'
+      - '.github/workflows/build-apk.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'code/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
