@@ -68,6 +68,11 @@ jobs:
           sed -i 's/CONFIG_LOADFONT=y/# CONFIG_LOADFONT is not set/' .config
           sed -i 's/CONFIG_SETFONT=y/# CONFIG_SETFONT is not set/' .config
           sed -i 's/CONFIG_HOSTID=y/# CONFIG_HOSTID is not set/' .config
+          sed -i 's/CONFIG_LOGNAME=y/# CONFIG_LOGNAME is not set/' .config
+          sed -i 's/CONFIG_WHO=y/# CONFIG_WHO is not set/' .config
+          sed -i 's/CONFIG_W=y/# CONFIG_W is not set/' .config
+          sed -i 's/CONFIG_USERS=y/# CONFIG_USERS is not set/' .config
+          sed -i 's/CONFIG_TTY=y/# CONFIG_TTY is not set/' .config
           
           # Force cross-compilation variables
           make -j$(nproc) CC="$CC" AR="$AR" LD="$LD"
