@@ -73,6 +73,11 @@ jobs:
           sed -i 's/CONFIG_W=y/# CONFIG_W is not set/' .config
           sed -i 's/CONFIG_USERS=y/# CONFIG_USERS is not set/' .config
           sed -i 's/CONFIG_TTY=y/# CONFIG_TTY is not set/' .config
+          sed -i 's/CONFIG_SYNC=y/# CONFIG_SYNC is not set/' .config
+          
+          # Disable hardware acceleration for hashes (causes issues with NDK/Clang on some archs)
+          sed -i 's/CONFIG_SHA1_HWACCEL=y/# CONFIG_SHA1_HWACCEL is not set/' .config
+          sed -i 's/CONFIG_SHA256_HWACCEL=y/# CONFIG_SHA256_HWACCEL is not set/' .config
           
           # Force cross-compilation variables
           make -j$(nproc) CC="$CC" AR="$AR" LD="$LD"
