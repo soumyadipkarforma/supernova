@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,8 +24,8 @@ import kotlinx.coroutines.delay
 fun AppSplashScreen(onFinished: () -> Unit) {
     var startAnimation by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.5f,
-        animationSpec = tween(durationMillis = 1000),
+        targetValue = if (startAnimation) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 1200, easing = EaseOutExpo),
         label = "scale"
     )
     val alpha by animateFloatAsState(
@@ -37,14 +36,14 @@ fun AppSplashScreen(onFinished: () -> Unit) {
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        delay(2000) // Show splash for 2 seconds
+        delay(2500) // Slightly longer for "best-in-class" feel
         onFinished()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color(0xFF000000)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -55,57 +54,56 @@ fun AppSplashScreen(onFinished: () -> Unit) {
                 painter = painterResource(id = R.drawable.ic_supernova_logo),
                 contentDescription = "Supernova Logo",
                 modifier = Modifier
-                    .size(160.dp)
+                    .size(120.dp)
                     .scale(scale)
                     .alpha(alpha)
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             
             Text(
                 text = "SUPERNOVA",
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 8.sp,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 12.sp,
                     color = Color.White
                 ),
                 modifier = Modifier.alpha(alpha)
             )
             
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = "Mobile Development Reimagined",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.White.copy(alpha = 0.7f),
+                text = "Professional IDE for Android",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = Color(0xFF80CBC4),
                     letterSpacing = 2.sp
-                ),
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .alpha(alpha)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "built by Soumyadip Karforma",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontWeight = FontWeight.Light,
-                    letterSpacing = 1.sp
                 ),
                 modifier = Modifier.alpha(alpha)
             )
         }
         
-        Text(
-            text = "v1.1",
-            style = MaterialTheme.typography.labelSmall.copy(color = Color.White.copy(alpha = 0.3f)),
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp)
-        )
+                .padding(bottom = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "built with love by Soumyadip Karforma",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = 1.sp
+                ),
+                modifier = Modifier.alpha(alpha)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "v1.2",
+                style = MaterialTheme.typography.labelSmall.copy(color = Color.White.copy(alpha = 0.2f)),
+                modifier = Modifier.alpha(alpha)
+            )
+        }
     }
 }
-
-// Helper for OvershootInterpolator in Compose
-private fun OvershootInterpolator() = android.view.animation.OvershootInterpolator(2f)
-private fun android.view.animation.Interpolator.toEasing() = Easing { x -> getInterpolation(x) }

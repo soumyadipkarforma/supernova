@@ -29,21 +29,32 @@ class ShellSession(
         val libDir = File(usrDir, "lib")
         val shellPath = File(binDir, "sh").absolutePath
         
-        // Fallback to system shell if bootstrap isn't ready (or for initial debug)
-        val executable = if (File(shellPath).exists()) shellPath else "/system/bin/sh"
+        // Use bash if available, else sh
+        val bashPath = File(binDir, "bash").absolutePath
+        val executable = if (File(bashPath).exists()) bashPath else if (File(shellPath).exists()) shellPath else "/system/bin/sh"
 
-        val pb = ProcessBuilder(executable)
+        // For login shell behavior, we prepend a hyphen to the process name or use --login
+        // In ProcessBuilder, we can't easily change the process name (argv[0]), 
+        // so we use the --login flag if bash is used.
+        val pb = if (executable.endsWith("bash")) {
+            ProcessBuilder(executable, "--login")
+        } else {
+            ProcessBuilder(executable)
+        }
+        
         pb.directory(workingDir)
         pb.redirectErrorStream(true)
 
         val env = pb.environment()
         
-        // Inject Standalone Environment
+        // Exact Termux-like Environment
         env["PATH"] = "${binDir.absolutePath}:${env["PATH"]}"
         env["LD_LIBRARY_PATH"] = libDir.absolutePath
-        env["HOME"] = workingDir.absolutePath
+        env["HOME"] = "/storage/emulated/0/sworkspace"
         env["TERM"] = "xterm-256color"
         env["PREFIX"] = usrDir.absolutePath
+        env["TMPDIR"] = File(usrDir, "tmp").absolutePath
+        env["LANG"] = "en_US.UTF-8"
 
         try {
             process = pb.start()
@@ -52,10 +63,11 @@ class ShellSession(
             scope.launch {
                 val reader = BufferedReader(InputStreamReader(process!!.inputStream))
                 try {
-                    var line: String? = reader.readLine()
-                    while (line != null) {
-                        _outputFlow.emit(line + "\n")
-                        line = reader.readLine()
+                    val buffer = CharArray(1024)
+                    var charsRead = reader.read(buffer)
+                    while (charsRead != -1) {
+                        _outputFlow.emit(String(buffer, 0, charsRead))
+                        charsRead = reader.read(buffer)
                     }
                 } catch (e: Exception) {
                     _outputFlow.emit("[Process Error]: ${e.message}\n")
@@ -64,10 +76,6 @@ class ShellSession(
                     onProcessExit(exitCode)
                 }
             }
-            
-            // Auto-init bash if available
-            sendCommand("export PATH=${binDir.absolutePath}:\$PATH")
-            sendCommand("if [ -f ${binDir.absolutePath}/bash ]; then exec ${binDir.absolutePath}/bash; fi")
 
         } catch (e: Exception) {
             scope.launch { _outputFlow.emit("[System Error]: Could not spawn process. ${e.message}\n") }
@@ -78,6 +86,17 @@ class ShellSession(
         scope.launch {
             try {
                 inputWriter?.write(command + "\n")
+                inputWriter?.flush()
+            } catch (e: Exception) {
+                _outputFlow.emit("[Input Error]: Pipe broken.\n")
+            }
+        }
+    }
+
+    fun sendRaw(data: String) {
+        scope.launch {
+            try {
+                inputWriter?.write(data)
                 inputWriter?.flush()
             } catch (e: Exception) {
                 _outputFlow.emit("[Input Error]: Pipe broken.\n")

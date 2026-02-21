@@ -4,7 +4,7 @@ import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 
 object FileManager {
-    val root = File("/storage/emulated/0/workspace")
+    val root = File("/storage/emulated/0/sworkspace")
 
     val fileSystemTick = MutableStateFlow(0L)
 

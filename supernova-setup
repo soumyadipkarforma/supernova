@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Supernova Service Manager for Termux
+# This script manages the Unix socket bridge for the Supernova IDE.
+
+SOCKET_PATH="$PREFIX/var/run/supernova.sock"
+PID_FILE="$PREFIX/var/run/supernova.pid"
+
+function start_service() {
+    if [ -f "$PID_FILE" ]; then
+        echo "Supernova service is already running."
+        exit 1
+    fi
+
+    echo "Starting Supernova service..."
+    # Use socat to bridge Unix socket to a login shell
+    # This allows the Flutter app to communicate with Termux
+    pkg install -y socat
+    
+    socat UNIX-LISTEN:"$SOCKET_PATH",fork,reuseaddr EXEC:"/bin/login",pty,stderr,setsid,sigint,echo=0 &
+    echo $! > "$PID_FILE"
+    
+    echo "Supernova service started at $SOCKET_PATH"
+}
+
+function stop_service() {
+    if [ ! -f "$PID_FILE" ]; then
+        echo "Supernova service is not running."
+        exit 1
+    fi
+
+    echo "Stopping Supernova service..."
+    kill $(cat "$PID_FILE")
+    rm -f "$PID_FILE" "$SOCKET_PATH"
+    echo "Supernova service stopped."
+}
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    *)
+        echo "Usage: supernova {start|stop}"
+        exit 1
+        ;;
+esac

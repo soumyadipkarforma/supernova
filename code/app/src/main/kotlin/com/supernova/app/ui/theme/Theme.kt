@@ -12,55 +12,65 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// We should ensure JetBrains Mono is loaded or fallback gracefully
+private val JetBrainsMono = FontFamily.Monospace
+
 private val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = JetBrainsMono,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
+    ),
+    titleLarge = TextStyle(
+        fontFamily = JetBrainsMono,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = JetBrainsMono,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
     )
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    secondary = Color(0xFFCCC2DC),
-    tertiary = Color(0xFFEFB8C8),
-    background = Color(0xFF0F0F14), // Deeper space background
-    surface = Color(0xFF1C1B21),
-    onPrimary = Color(0xFF381E72),
-    onSecondary = Color(0xFF332D41),
-    onTertiary = Color(0xFF492532),
-    onBackground = Color(0xFFE6E1E5),
-    onSurface = Color(0xFFE6E1E5),
-    surfaceVariant = Color(0xFF2B2930),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    outline = Color(0xFF938F99)
-)
+private val TermuxTeal = Color(0xFF80CBC4)
+private val TermuxAmber = Color(0xFFFFCC80)
+private val DeepBlack = Color(0xFF000000)
+private val SurfaceGrey = Color(0xFF121212)
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF6750A4),
-    secondary = Color(0xFF625B71),
-    tertiary = Color(0xFF7D5260),
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F)
+private val DarkColorScheme = darkColorScheme(
+    primary = TermuxTeal,
+    secondary = TermuxAmber,
+    tertiary = Color(0xFFB0BEC5),
+    background = DeepBlack,
+    surface = SurfaceGrey,
+    onPrimary = DeepBlack,
+    onSecondary = DeepBlack,
+    onTertiary = DeepBlack,
+    onBackground = Color(0xFFE0E0E0),
+    onSurface = Color(0xFFE0E0E0),
+    surfaceVariant = Color(0xFF1E1E1E),
+    onSurfaceVariant = Color(0xFFB0BEC5),
+    outline = Color(0xFF424242)
 )
 
 @Composable
 fun SupernovaTheme(
-    darkTheme: Boolean = true, // Default to dark for coding environment
+    darkTheme: Boolean = true, 
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    // We force dark theme for the "Best-in-class" terminal experience
+    val colorScheme = DarkColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Ensure Typography is defined or use default
+        typography = Typography,
         content = content
     )
 }

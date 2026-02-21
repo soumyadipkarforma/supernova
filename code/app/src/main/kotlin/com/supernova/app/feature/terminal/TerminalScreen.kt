@@ -41,7 +41,7 @@ fun TerminalScreen(workingDir: File) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
+            .background(Color(0xFF000000)) // Pure matte black like Termux
     ) {
         // Terminal Output Area
         LazyColumn(
@@ -52,28 +52,25 @@ fun TerminalScreen(workingDir: File) {
                 .padding(8.dp),
             verticalArrangement = Arrangement.Bottom
         ) {
-            items(lines.size) { index ->
+            items(lines.size) {
                 Text(
                     text = lines[index],
                     style = TextStyle(
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 14.sp,
-                        color = Color(0xFFD4D4D4)
+                        fontSize = 13.sp,
+                        color = Color(0xFFE0E0E0), // Crisp white/grey text
+                        lineHeight = 18.sp
                     )
                 )
             }
         }
 
-        // Virtual Keys Toolbar
+        // Virtual Keys Toolbar (Termux Style)
         var isCtrl by remember { mutableStateOf(false) }
         var isAlt by remember { mutableStateOf(false) }
 
-        // Helper for keys
         val onKey: (String, String) -> Unit = { label, code ->
-            // Simple logic: if Alt is active, prefix with Esc
             val finalCode = if (isAlt && label != "Alt") "\u001B$code" else code
-            // Note: Ctrl handling is complex for all keys, implemented basically for now
-            // For now, modifiers just toggle visual state or prefix
             
             if (label == "HomeDir") {
                 viewModel.sendCommand("cd ${workingDir.absolutePath}")
@@ -81,7 +78,6 @@ fun TerminalScreen(workingDir: File) {
                 viewModel.sendRaw(finalCode)
             }
             
-            // Reset modifiers after non-modifier key
             if (label != "Ctrl" && label != "Alt" && label != "Shift") {
                 isCtrl = false
                 isAlt = false
@@ -90,60 +86,42 @@ fun TerminalScreen(workingDir: File) {
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF252526),
-            tonalElevation = 2.dp
+            color = Color(0xFF121212),
+            tonalElevation = 4.dp
         ) {
             androidx.compose.foundation.lazy.LazyRow(
-                modifier = Modifier.padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
-                item {
-                    VirtualKey("Esc", onClick = { onKey("Esc", "\u001B") })
-                }
-                item {
-                    VirtualKey("Tab", onClick = { onKey("Tab", "\u0009") })
-                }
-                item {
-                    VirtualKey("Ctrl", isSelected = isCtrl, onClick = { isCtrl = !isCtrl })
-                }
-                item {
-                    VirtualKey("Alt", isSelected = isAlt, onClick = { isAlt = !isAlt })
-                }
-                item {
-                    VirtualKey("HomeDir", onClick = { onKey("HomeDir", "") })
-                }
-                item {
-                    VirtualKey("Shells: 1", onClick = { /* TODO: Show menu */ })
-                }
+                item { VirtualKey("ESC", onClick = { onKey("Esc", "\u001B") }) }
+                item { VirtualKey("TAB", onClick = { onKey("Tab", "\u0009") }) }
+                item { VirtualKey("CTRL", isSelected = isCtrl, onClick = { isCtrl = !isCtrl }) }
+                item { VirtualKey("ALT", isSelected = isAlt, onClick = { isAlt = !isAlt }) }
+                item { VirtualKey("-", onClick = { onKey("-", "-") }) }
                 // Arrows
                 item { VirtualKey("▲", onClick = { onKey("Up", "\u001B[A") }) }
                 item { VirtualKey("▼", onClick = { onKey("Down", "\u001B[B") }) }
                 item { VirtualKey("◀", onClick = { onKey("Left", "\u001B[D") }) }
                 item { VirtualKey("▶", onClick = { onKey("Right", "\u001B[C") }) }
-                
-                // Special
-                item { VirtualKey("Home", onClick = { onKey("Home", "\u001B[H") }) }
-                item { VirtualKey("End", onClick = { onKey("End", "\u001B[F") }) }
-                item { VirtualKey("PgUp", onClick = { onKey("PgUp", "\u001B[5~") }) }
-                item { VirtualKey("PgDn", onClick = { onKey("PgDn", "\u001B[6~") }) }
             }
         }
         
-        // Input Area
+        // Input Area (Compact)
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF2D2D2D),
-            tonalElevation = 4.dp
+            color = Color(0xFF000000),
+            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFF333333))
         ) {
             Row(
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     "$ ",
-                    color = Color(0xFF4CAF50),
+                    color = Color(0xFF80CBC4), // Termux Teal prompt
                     fontFamily = FontFamily.Monospace,
-                    modifier = Modifier.padding(top = 2.dp)
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
                 )
                 BasicTextField(
                     value = input,
@@ -153,13 +131,15 @@ fun TerminalScreen(workingDir: File) {
                         color = Color.White,
                         fontSize = 14.sp
                     ),
-                    cursorBrush = SolidColor(Color.White),
+                    cursorBrush = SolidColor(Color(0xFF80CBC4)),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = {
-                        viewModel.sendCommand(input)
-                        input = ""
+                        if (input.isNotEmpty()) {
+                            viewModel.sendCommand(input)
+                            input = ""
+                        }
                     }),
-                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                    modifier = Modifier.weight(1f).padding(start = 2.dp)
                 )
             }
         }
@@ -174,18 +154,20 @@ fun VirtualKey(
 ) {
     Surface(
         onClick = onClick,
-        shape = MaterialTheme.shapes.small,
-        color = if (isSelected) Color(0xFF007ACC) else Color(0xFF3C3C3C),
-        modifier = Modifier.height(32.dp)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+        color = if (isSelected) Color(0xFF80CBC4).copy(alpha = 0.3f) else Color(0xFF212121),
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF80CBC4)) else null,
+        modifier = Modifier.height(36.dp)
     ) {
         Box(
             contentAlignment = androidx.compose.ui.Alignment.Center,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         ) {
             Text(
                 text = text,
-                color = Color.White,
-                fontSize = 12.sp,
+                color = if (isSelected) Color(0xFF80CBC4) else Color.White,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
             )
         }

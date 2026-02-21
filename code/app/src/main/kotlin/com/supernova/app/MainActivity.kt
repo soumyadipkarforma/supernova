@@ -116,7 +116,7 @@ fun StoragePermissionScreen(onPermissionGranted: () -> Unit, onRequestPermission
     ) {
         Text("Storage Permission Needed", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Supernova needs access to your device storage to manage files in /storage/emulated/0/workspace.")
+        Text("Supernova needs access to your device storage to manage files in /storage/emulated/0/sworkspace.")
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onRequestPermission) {
             Text("Grant Permission")
